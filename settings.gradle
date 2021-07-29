@@ -1,0 +1,3 @@
+rootProject.name = "RnInfoMaven"
+include ':app'
+include ':DevicesInfo'
