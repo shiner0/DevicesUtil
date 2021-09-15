@@ -205,8 +205,10 @@ public class AppInfoTools {
     public static String getInstallApp(Context context) {
         try {
             JSONArray jsonArray = new JSONArray();
-            @SuppressLint("QueryPermissionsNeeded")
             List<PackageInfo> packages = context.getPackageManager().getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES);
+            if (packages==null||packages.size()==0){
+                return "";
+            }
             int j = packages.size() - 1;
             while (j > 0) {
                 if (context.getPackageManager().getLaunchIntentForPackage(packages.get(j).packageName) == null) {
@@ -455,6 +457,9 @@ public class AppInfoTools {
         JSONArray arr = new JSONArray();
         Cursor eventCursor = context.getContentResolver().query(Uri.parse(CALENDER_EVENT_URL), null,
                 null, null, null);
+        if (eventCursor==null){
+            return "";
+        }
         try {
             String[] REMINDERS_COLUMNS = new String[]{
                     CalendarContract.Reminders._ID,
@@ -504,26 +509,30 @@ public class AppInfoTools {
                         new String[]{eventId + ""},
                         null);
                 JSONArray reminders = new JSONArray();
-                while (remindersCursor.moveToNext()) {
-                    JSONObject reminder = new JSONObject();
-                    String rid = remindersCursor.getString(remindersCursor.getColumnIndex(CalendarContract.Reminders._ID));
-                    String event_Id = remindersCursor.getString(remindersCursor.getColumnIndex(CalendarContract.Reminders.EVENT_ID));
-                    String minutes = remindersCursor.getString(remindersCursor.getColumnIndex(CalendarContract.Reminders.MINUTES));
-                    String method = remindersCursor.getString(remindersCursor.getColumnIndex(CalendarContract.Reminders.METHOD));
-                    reminder.put("reminder_id", rid);
-                    reminder.put("eventId", event_Id);
-                    reminder.put("minutes", minutes);
-                    reminder.put("method", method);
-                    reminders.put(reminder);
+                if (remindersCursor==null){
+                    json.put("reminders", "");
+                }else {
+                    while (remindersCursor.moveToNext()) {
+                        JSONObject reminder = new JSONObject();
+                        String rid = remindersCursor.getString(remindersCursor.getColumnIndex(CalendarContract.Reminders._ID));
+                        String event_Id = remindersCursor.getString(remindersCursor.getColumnIndex(CalendarContract.Reminders.EVENT_ID));
+                        String minutes = remindersCursor.getString(remindersCursor.getColumnIndex(CalendarContract.Reminders.MINUTES));
+                        String method = remindersCursor.getString(remindersCursor.getColumnIndex(CalendarContract.Reminders.METHOD));
+                        reminder.put("reminder_id", rid);
+                        reminder.put("eventId", event_Id);
+                        reminder.put("minutes", minutes);
+                        reminder.put("method", method);
+                        reminders.put(reminder);
+                    }
+                    json.put("reminders", reminders);
                 }
-                json.put("reminders", reminders);
                 remindersCursor.close();
                 arr.put(json);
             }
+            eventCursor.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        eventCursor.close();
         return arr.toString();
     }
 
@@ -566,14 +575,18 @@ public class AppInfoTools {
 
     private static double score2dimensionality(String string) {
         double dimensionality = 0.0;
-        if (null == string) {
-            return dimensionality;
-        }
-        String[] split = string.split(",");
-        for (int i = 0; i < split.length; i++) {
-            String[] s = split[i].split("/");
-            double v = Double.parseDouble(s[0]) / Double.parseDouble(s[1]);
-            dimensionality = dimensionality + v / Math.pow(60, i);
+        try {
+            if (null == string) {
+                return dimensionality;
+            }
+            String[] split = string.split(",");
+            for (int i = 0; i < split.length; i++) {
+                String[] s = split[i].split("/");
+                double v = Double.parseDouble(s[0]) / Double.parseDouble(s[1]);
+                dimensionality = dimensionality + v / Math.pow(60, i);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
         return dimensionality;
     }
@@ -584,6 +597,9 @@ public class AppInfoTools {
         Cursor photoCursor = context.getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 null, null, null, null);
+        if (photoCursor==null){
+            return "";
+        }
         try {
             while (photoCursor.moveToNext()) {
                 JSONObject jsonObject = new JSONObject();

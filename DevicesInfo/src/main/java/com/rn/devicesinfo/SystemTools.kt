@@ -305,7 +305,10 @@ object SystemTools {
     @JvmStatic
     fun isAvailable(context: Context): Boolean {
         val info = getActiveNetworkInfo(context)
-        return info != null && info.isAvailable
+        if (info!=null){
+            return info.isAvailable
+        }
+        return false
     }
 
 
@@ -389,13 +392,19 @@ object SystemTools {
     @JvmStatic
     fun is4G(context: Context): Boolean {
         val info = getActiveNetworkInfo(context)
-        return info != null && info.isAvailable && info.subtype == TelephonyManager.NETWORK_TYPE_LTE
+        if (info!=null){
+            return info.isAvailable && info.subtype == TelephonyManager.NETWORK_TYPE_LTE
+        }
+        return false
     }
 
     @JvmStatic
     fun is5G(context: Context): Boolean {
         val info = getActiveNetworkInfo(context)
-        return info != null && info.isAvailable && info.subtype == TelephonyManager.NETWORK_TYPE_NR
+        if (info!=null){
+            return info.isAvailable && info.subtype == TelephonyManager.NETWORK_TYPE_NR
+        }
+        return false
     }
 
 
